@@ -10,3 +10,9 @@ Otwórz `index.html` w przeglądarce lub wrzuć cały katalog do repozytorium Gi
 
 ## GitHub Pages
 Po wrzuceniu wszystkich plików do repozytorium ustaw Pages z gałęzi `main` i folderu `/root`.
+
+## Initial version
+
+- SPA
+- scoring
+- timer
