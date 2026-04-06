@@ -17,6 +17,7 @@ Prosta aplikacja SPA do nauki tabliczki mnożenia dla dzieci.
 - błędna odpowiedź przekreślona + pokazanie poprawnej
 - wynik końcowy: liczba poprawnych, procent, czas, poziom
 - pilnowanie focusu w polu odpowiedzi, żeby nie trzeba było klikać
+- przycisk `OK` do zatwierdzania odpowiedzi na iPhone i innych urządzeniach mobilnych
 - brak duplikatów pytań w jednej rundzie
 
 ## Uruchomienie lokalnie

@@ -114,9 +114,17 @@ function nextQuestion() {
           spellcheck="false"
           aria-label="Wpisz odpowiedź"
         >
+        <button
+          id="submit-btn"
+          class="primary-button submit-button"
+          type="button"
+          aria-label="Zatwierdź odpowiedź"
+        >
+          OK
+        </button>
       </div>
 
-      <p class="helper-text">Wpisz liczbę i naciśnij Enter.</p>
+      <p class="helper-text">Wpisz liczbę i naciśnij OK albo Enter.</p>
       <div class="status" id="status"></div>
     </div>
   `;
@@ -133,6 +141,11 @@ function attachInputHandlers() {
 
   input.addEventListener("keydown", handleKeyDown);
   input.addEventListener("input", sanitizeInput);
+
+  const submitButton = document.getElementById("submit-btn");
+  if (submitButton) {
+    submitButton.addEventListener("click", checkAnswer);
+  }
 
   const focusEvents = ["click", "touchstart", "pointerdown"];
   focusEvents.forEach((eventName) => {
@@ -223,6 +236,12 @@ function checkAnswer() {
 
   state.count += 1;
   input.disabled = true;
+
+  const submitButton = document.getElementById("submit-btn");
+  if (submitButton) {
+    submitButton.disabled = true;
+  }
+
   stopFocusKeeper();
 
   nextQuestionTimeout = window.setTimeout(nextQuestion, QUESTION_DELAY_MS);
