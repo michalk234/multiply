@@ -1,12 +1,11 @@
 /**
- * View layer for the multiplication table app.
+ * View layer
  */
 
 export function renderStartView(app) {
   app.innerHTML = `
     <div class="container">
       <h1>Tabliczka mnożenia</h1>
-      <p class="subtitle">Wybierz poziom i rozwiąż 10 pytań.</p>
       <div class="level-buttons">
         <button class="level-button" data-max="30">Do 30</button>
         <button class="level-button" data-max="50">Do 50</button>
@@ -16,73 +15,46 @@ export function renderStartView(app) {
   `;
 }
 
-export function renderQuestionView(app, state, totalQuestions, progress) {
-  const currentNumber = state.count + 1;
+export function renderQuestionView(app, state, total, progress) {
+  const current = state.count + 1;
 
   app.innerHTML = `
     <div class="container">
-      <div class="game-header">
-        <div class="game-meta">Pytanie ${currentNumber}/${totalQuestions}</div>
-        <div class="game-meta">Poprawne: ${state.correct}</div>
-      </div>
+      <div>Pytanie ${current}/${total}</div>
 
-      <div class="progress-track">
-        <div class="progress-bar" style="width: ${progress}%"></div>
-      </div>
+      <div>${state.current.a} × ${state.current.b} = ?</div>
 
-      <div class="question-card">
-        <span class="question-label">Ile to jest?</span>
-        <div class="question">${state.current.a} × ${state.current.b} = ?</div>
-      </div>
+      <input id="answer" type="text" autofocus />
+      <button id="submit-btn">OK</button>
 
-      <div class="answer-row">
-        <input
-          id="answer"
-          class="answer-input"
-          type="text"
-          inputmode="numeric"
-          pattern="[0-9]*"
-          autocomplete="off"
-          autocapitalize="off"
-          autocorrect="off"
-          spellcheck="false"
-          autofocus
-        >
-        <button id="submit-btn" class="primary-button" type="button">
-          OK
-        </button>
-      </div>
+      <div id="status"></div>
 
-      <div class="status" id="status"></div>
-
-      <button id="next-btn" class="secondary-button" style="display:none;">
-        Dalej
-      </button>
+      <button id="next-btn" style="display:none;">Dalej</button>
+      <button id="exit-btn">Wyjdź</button>
     </div>
   `;
 }
 
-export function renderResultsView(app, state, totalQuestions, percent, time) {
+export function renderResultsView(app, state, total, percent, time) {
   app.innerHTML = `
-    <div class="container">
+    <div>
       <h1>Wynik</h1>
-      <div>${state.correct}/${totalQuestions} (${percent}%)</div>
-      <div>Czas: ${time}s</div>
+      <div>${state.correct}/${total}</div>
+      <div>${percent}%</div>
+      <div>${time}s</div>
       <button id="play-again">Jeszcze raz</button>
     </div>
   `;
 }
 
 export function showCorrectAnswerStatus() {
-  const status = document.getElementById("status");
-  if (status) status.innerHTML = "Dobrze! ✅";
+  const el = document.getElementById("status");
+  if (el) el.innerHTML = "Dobrze!";
 }
 
-export function showWrongAnswerStatus(userAnswer, correctAnswer) {
-  const status = document.getElementById("status");
-  if (status) {
-    status.innerHTML = `${userAnswer} → ${correctAnswer}`;
-  }
+export function showWrongAnswerStatus(user, correct) {
+  const el = document.getElementById("status");
+  if (el) el.innerHTML = `${user} → ${correct}`;
 }
 
 export function getAnswerInput() {

@@ -1,7 +1,8 @@
 /**
  * Controller layer for the multiplication table app.
- * Simplified focus handling (no timers, no global listeners).
- * Updated flow: no auto-next, user proceeds via "Next" button or Enter.
+ * - Focus moves to Next button after answer
+ * - Enter works for both submit and next
+ * - Exit button supported
  */
 
 import {
@@ -15,6 +16,7 @@ import {
   isAnswerCorrect,
   sanitizeNumericValue
 } from "./model.js";
+
 import {
   getAnswerInput,
   getLevelButtons,
@@ -68,29 +70,35 @@ export class GameController {
     const progress = getProgressPercent(this.state.count);
 
     renderQuestionView(this.app, this.state, TOTAL_QUESTIONS, progress);
-    this.attachInputHandlers();
-    this.ensureAnswerFocus();
+    this.attachHandlers();
+    this.focusInput();
   }
 
-  attachInputHandlers() {
+  attachHandlers() {
     const input = getAnswerInput();
-    if (!input) return;
+    if (input) {
+      input.addEventListener("keydown", this.handleKeyDown);
+      input.addEventListener("input", this.handleInput);
+    }
 
-    input.addEventListener("keydown", this.handleKeyDown);
-    input.addEventListener("input", this.handleInput);
+    const submit = getSubmitButton();
+    if (submit) {
+      submit.addEventListener("click", this.checkAnswer);
+    }
 
-    const submitButton = getSubmitButton();
-    if (submitButton) {
-      submitButton.addEventListener("click", this.checkAnswer);
+    const exitBtn = document.getElementById("exit-btn");
+    if (exitBtn) {
+      exitBtn.addEventListener("click", () => this.renderStart());
     }
   }
 
   handleKeyDown(event) {
     const input = getAnswerInput();
+    const nextBtn = document.getElementById("next-btn");
 
     if (event.key === "Enter") {
-      if (input && input.disabled) {
-        this.nextQuestion();
+      if (input && input.disabled && nextBtn) {
+        nextBtn.click();
         return;
       }
 
@@ -104,24 +112,24 @@ export class GameController {
     target.value = sanitizeNumericValue(target.value);
   }
 
-  ensureAnswerFocus() {
+  focusInput() {
     const input = getAnswerInput();
-    if (!input || input.disabled) return;
+    if (!input) return;
 
     input.focus();
-    const length = input.value.length;
-    input.setSelectionRange(length, length);
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
   }
 
   checkAnswer() {
     const input = getAnswerInput();
-    const submitButton = getSubmitButton();
+    const submit = getSubmitButton();
 
     if (!input || input.disabled || !this.state.current) return;
 
     const value = input.value.trim();
     if (!value) {
-      this.ensureAnswerFocus();
+      this.focusInput();
       return;
     }
 
@@ -136,16 +144,13 @@ export class GameController {
 
     this.state.count += 1;
     input.disabled = true;
+    if (submit) submit.disabled = true;
 
-    if (submitButton) submitButton.disabled = true;
-
-    // show Next button
-    const nextButton = document.getElementById("next-btn");
-    if (nextButton) {
-      nextButton.style.display = "block";
-      nextButton.addEventListener("click", () => {
-        this.nextQuestion();
-      });
+    const nextBtn = document.getElementById("next-btn");
+    if (nextBtn) {
+      nextBtn.style.display = "block";
+      nextBtn.focus();
+      nextBtn.addEventListener("click", () => this.nextQuestion());
     }
   }
 
@@ -155,11 +160,9 @@ export class GameController {
 
     renderResultsView(this.app, this.state, TOTAL_QUESTIONS, percent, time);
 
-    const playAgainButton = getPlayAgainButton();
-    if (playAgainButton) {
-      playAgainButton.addEventListener("click", () => {
-        this.renderStart();
-      });
+    const playAgain = getPlayAgainButton();
+    if (playAgain) {
+      playAgain.addEventListener("click", () => this.renderStart());
     }
   }
 }
