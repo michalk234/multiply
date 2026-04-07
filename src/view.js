@@ -66,9 +66,28 @@ export function renderResultsView(app, state, totalQuestions, percent, time) {
   app.innerHTML = `
     <div class="container">
       <h1>Wynik</h1>
-      <div>${state.correct}/${totalQuestions} (${percent}%)</div>
-      <div>Czas: ${time}s</div>
-      <button id="play-again">Jeszcze raz</button>
+      <p class="result-summary">Brawo! Zobacz, jak Ci poszło.</p>
+
+      <div class="result-grid">
+        <div class="result-card">
+          <div class="result-label">Poprawne odpowiedzi</div>
+          <div class="result-value">${state.correct}/${totalQuestions}</div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-label">Skuteczność</div>
+          <div class="result-value">${percent}%</div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-label">Czas</div>
+          <div class="result-value">${time}s</div>
+        </div>
+      </div>
+
+      <button id="play-again" class="primary-button" type="button">
+        Jeszcze raz
+      </button>
     </div>
   `;
 }
