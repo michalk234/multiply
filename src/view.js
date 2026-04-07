@@ -54,6 +54,10 @@ export function renderQuestionView(app, state, totalQuestions, progress) {
       </div>
 
       <div class="status" id="status"></div>
+
+      <button id="next-btn" class="secondary-button" style="display:none;">
+        Dalej
+      </button>
     </div>
   `;
 }

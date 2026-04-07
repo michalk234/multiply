@@ -1,6 +1,7 @@
 /**
  * Controller layer for the multiplication table app.
  * Simplified focus handling (no timers, no global listeners).
+ * Updated flow: no auto-next, user proceeds via "Next" button or Enter.
  */
 
 import {
@@ -26,13 +27,10 @@ import {
   showWrongAnswerStatus
 } from "./view.js";
 
-const QUESTION_DELAY_MS = 1100;
-
 export class GameController {
   constructor(app) {
     this.app = app;
     this.state = createInitialState();
-    this.nextQuestionTimeout = null;
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleInput = this.handleInput.bind(this);
@@ -44,7 +42,6 @@ export class GameController {
   }
 
   renderStart() {
-    this.clearNextQuestionTimeout();
     renderStartView(this.app);
 
     getLevelButtons().forEach((button) => {
@@ -62,8 +59,6 @@ export class GameController {
   }
 
   nextQuestion() {
-    this.clearNextQuestionTimeout();
-
     if (this.state.count >= TOTAL_QUESTIONS) {
       this.showResults();
       return;
@@ -91,7 +86,14 @@ export class GameController {
   }
 
   handleKeyDown(event) {
+    const input = getAnswerInput();
+
     if (event.key === "Enter") {
+      if (input && input.disabled) {
+        this.nextQuestion();
+        return;
+      }
+
       event.preventDefault();
       this.checkAnswer();
     }
@@ -109,13 +111,6 @@ export class GameController {
     input.focus();
     const length = input.value.length;
     input.setSelectionRange(length, length);
-  }
-
-  clearNextQuestionTimeout() {
-    if (this.nextQuestionTimeout) {
-      clearTimeout(this.nextQuestionTimeout);
-      this.nextQuestionTimeout = null;
-    }
   }
 
   checkAnswer() {
@@ -144,14 +139,17 @@ export class GameController {
 
     if (submitButton) submitButton.disabled = true;
 
-    this.nextQuestionTimeout = setTimeout(() => {
-      this.nextQuestion();
-    }, QUESTION_DELAY_MS);
+    // show Next button
+    const nextButton = document.getElementById("next-btn");
+    if (nextButton) {
+      nextButton.style.display = "block";
+      nextButton.addEventListener("click", () => {
+        this.nextQuestion();
+      });
+    }
   }
 
   showResults() {
-    this.clearNextQuestionTimeout();
-
     const time = formatElapsedTime(this.state.startTime, Date.now());
     const percent = getScorePercent(this.state.correct);
 
