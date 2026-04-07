@@ -1,6 +1,6 @@
 /**
  * Controller layer for the multiplication table app.
- * This file coordinates model, view, DOM events, focus handling and round flow.
+ * Simplified focus handling (no timers, no global listeners).
  */
 
 import {
@@ -27,36 +27,23 @@ import {
 } from "./view.js";
 
 const QUESTION_DELAY_MS = 1100;
-const FOCUS_KEEPER_INTERVAL_MS = 300;
 
 export class GameController {
-  /**
-   * @param {HTMLElement} app
-   */
   constructor(app) {
     this.app = app;
     this.state = createInitialState();
-    this.focusInterval = null;
     this.nextQuestionTimeout = null;
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleInput = this.handleInput.bind(this);
-    this.ensureAnswerFocus = this.ensureAnswerFocus.bind(this);
     this.checkAnswer = this.checkAnswer.bind(this);
   }
 
-  /**
-   * Start the controller.
-   */
   init() {
     this.renderStart();
   }
 
-  /**
-   * Render the start screen and attach start screen events.
-   */
   renderStart() {
-    this.stopFocusKeeper();
     this.clearNextQuestionTimeout();
     renderStartView(this.app);
 
@@ -67,10 +54,6 @@ export class GameController {
     });
   }
 
-  /**
-   * Start a new game.
-   * @param {number} max
-   */
   startGame(max) {
     this.state = createInitialState(max);
     this.state.startTime = Date.now();
@@ -78,9 +61,6 @@ export class GameController {
     this.nextQuestion();
   }
 
-  /**
-   * Render the next question or finish the game.
-   */
   nextQuestion() {
     this.clearNextQuestionTimeout();
 
@@ -97,14 +77,9 @@ export class GameController {
     this.ensureAnswerFocus();
   }
 
-  /**
-   * Attach handlers for the current question view.
-   */
   attachInputHandlers() {
     const input = getAnswerInput();
-    if (!input) {
-      return;
-    }
+    if (!input) return;
 
     input.addEventListener("keydown", this.handleKeyDown);
     input.addEventListener("input", this.handleInput);
@@ -113,19 +88,8 @@ export class GameController {
     if (submitButton) {
       submitButton.addEventListener("click", this.checkAnswer);
     }
-
-    const focusEvents = ["click", "touchstart", "pointerdown"];
-    focusEvents.forEach((eventName) => {
-      document.addEventListener(eventName, this.ensureAnswerFocus, true);
-    });
-
-    this.startFocusKeeper();
   }
 
-  /**
-   * Handle Enter key submit.
-   * @param {KeyboardEvent} event
-   */
   handleKeyDown(event) {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -133,78 +97,32 @@ export class GameController {
     }
   }
 
-  /**
-   * Sanitize answer input to digits only.
-   * @param {Event} event
-   */
   handleInput(event) {
-    const target = /** @type {HTMLInputElement} */ (event.target);
+    const target = event.target;
     target.value = sanitizeNumericValue(target.value);
   }
 
-  /**
-   * Keep focus in the answer input.
-   */
   ensureAnswerFocus() {
     const input = getAnswerInput();
-    if (!input || input.disabled) {
-      this.stopFocusKeeper();
-      return;
-    }
+    if (!input || input.disabled) return;
 
-    if (document.activeElement !== input) {
-      input.focus({ preventScroll: true });
-      const length = input.value.length;
-      input.setSelectionRange(length, length);
-    }
+    input.focus();
+    const length = input.value.length;
+    input.setSelectionRange(length, length);
   }
 
-  /**
-   * Start the focus keeper interval.
-   */
-  startFocusKeeper() {
-    this.stopFocusKeeper();
-
-    this.focusInterval = window.setInterval(() => {
-      this.ensureAnswerFocus();
-    }, FOCUS_KEEPER_INTERVAL_MS);
-  }
-
-  /**
-   * Stop focus interval and focus-capture listeners.
-   */
-  stopFocusKeeper() {
-    if (this.focusInterval) {
-      window.clearInterval(this.focusInterval);
-      this.focusInterval = null;
-    }
-
-    const focusEvents = ["click", "touchstart", "pointerdown"];
-    focusEvents.forEach((eventName) => {
-      document.removeEventListener(eventName, this.ensureAnswerFocus, true);
-    });
-  }
-
-  /**
-   * Clear delayed transition to the next question.
-   */
   clearNextQuestionTimeout() {
     if (this.nextQuestionTimeout) {
-      window.clearTimeout(this.nextQuestionTimeout);
+      clearTimeout(this.nextQuestionTimeout);
       this.nextQuestionTimeout = null;
     }
   }
 
-  /**
-   * Check the current answer and update the state.
-   */
   checkAnswer() {
     const input = getAnswerInput();
     const submitButton = getSubmitButton();
 
-    if (!input || input.disabled || !this.state.current) {
-      return;
-    }
+    if (!input || input.disabled || !this.state.current) return;
 
     const value = input.value.trim();
     if (!value) {
@@ -224,21 +142,14 @@ export class GameController {
     this.state.count += 1;
     input.disabled = true;
 
-    if (submitButton) {
-      submitButton.disabled = true;
-    }
+    if (submitButton) submitButton.disabled = true;
 
-    this.stopFocusKeeper();
-    this.nextQuestionTimeout = window.setTimeout(() => {
+    this.nextQuestionTimeout = setTimeout(() => {
       this.nextQuestion();
     }, QUESTION_DELAY_MS);
   }
 
-  /**
-   * Render the final result screen.
-   */
   showResults() {
-    this.stopFocusKeeper();
     this.clearNextQuestionTimeout();
 
     const time = formatElapsedTime(this.state.startTime, Date.now());
