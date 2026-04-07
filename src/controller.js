@@ -139,13 +139,16 @@ export class GameController {
 
     if (submitButton) submitButton.disabled = true;
 
-    // show Next button
+    // show Next button + focus
     const nextButton = document.getElementById("next-btn");
     if (nextButton) {
       nextButton.style.display = "block";
+
       nextButton.addEventListener("click", () => {
         this.nextQuestion();
       });
+
+      nextButton.focus(); // <-- ADDED
     }
   }
 
